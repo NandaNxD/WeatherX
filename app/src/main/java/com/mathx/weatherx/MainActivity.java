@@ -39,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
     int ButtonHideTime=1500;
     GridLayout gridLayout;
     int weather_id;
+    String networkErrorMessage="NETWORK ERROR";
+    String AQIDisplayFormat="AQI :";
     String API_KEY= BuildConfig.API_KEY;
     String weather_description;
     ImageView thermometer;
@@ -47,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
     String longitude;
     TextView errors;
     String city;
-    SQLiteDatabase weatherDatabase;
 
     // Weather Description TextView
     TextView weather;
@@ -133,18 +134,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
     public String GetDay(String datex){
-        Long lon=Long.parseLong(datex);
+        long lon=Long.parseLong(datex);
         java.util.Date date=new java.util.Date((long)lon*1000);
         return date.toString().substring(0,3).toUpperCase();
     }
-    public String GetDate(String datex){
-        Long lon=Long.parseLong(datex);
-        java.util.Date date=new java.util.Date((long)lon*1000);
-        return date.toString();
-    }
+
     public String getCeilTemp(String s){
-        String temp=String.valueOf((int)Double.parseDouble(s))+"\u2103";
-        return temp;
+        return (int) Double.parseDouble(s) +"\u2103";
     }
     public void getResponse(final VolleyCallback callback,String urls){
         RequestQueue requestQueue;
@@ -271,6 +267,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         String air_quality_index="https://api.openweathermap.org/data/2.5/air_pollution?lat="+latitude+"&lon="+longitude+"&appid="+ API_KEY;
                         getResponse(new VolleyCallback() {
+
                             @Override
                             public void onSuccess(String res) {
                                 //gridLayoutTemp.setAlpha(0f);
@@ -321,7 +318,8 @@ public class MainActivity extends AppCompatActivity {
                                 setDailyVisible();
                                  String aqi = new Gson().fromJson(String.valueOf(res), JsonObject.class).getAsJsonObject().get("list").getAsJsonArray().get(0)
                                          .getAsJsonObject().get("main").getAsJsonObject().get("aqi").getAsString();
-                                 aqis.setText("AQI: "+aqi);
+                                 AQIDisplayFormat=AQIDisplayFormat+aqi;
+                                 aqis.setText(AQIDisplayFormat);
                             }
 
                             @Override
@@ -336,7 +334,7 @@ public class MainActivity extends AppCompatActivity {
                                     errors.setText(errorText);
                                 }
                                 catch (Exception e){
-                                    errors.setText("Network Error");
+                                    errors.setText(networkErrorMessage);
                                 }
 
                             }
@@ -355,7 +353,7 @@ public class MainActivity extends AppCompatActivity {
                             errors.setText(errorText);
                         }
                         catch (Exception e){
-                            errors.setText("Network Error");
+                            errors.setText(networkErrorMessage);
                         }
 
                     }
@@ -371,12 +369,12 @@ public class MainActivity extends AppCompatActivity {
                 errors.setVisibility(View.VISIBLE);
 
                 try{
-                    String errorText=String.valueOf(volleyError.networkResponse.statusCode)+": CITY NOT FOUND";
+                    String errorText= volleyError.networkResponse.statusCode +": CITY NOT FOUND";
                     Log.i("ErrorText",String.valueOf(volleyError.networkResponse.statusCode));
                     errors.setText(errorText);
                 }
                 catch (Exception e){
-                    errors.setText("Network Error");
+                    errors.setText(networkErrorMessage);
                 }
             }
         },current_weather);
