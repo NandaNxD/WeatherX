@@ -1,9 +1,9 @@
 package com.mathx.weatherx;
 
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.style.BulletSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -31,16 +31,15 @@ import java.util.TimerTask;
 import java.util.Vector;
 
 public class MainActivity extends AppCompatActivity {
-    String dbCity;
     ImageView background;
     TextView current_temp_textView;
     EditText editText;
     Button button;
     GridLayout gridLayoutTemp;
-    Cursor cursor;
+    int ButtonHideTime=1500;
     GridLayout gridLayout;
     int weather_id;
-    String api_key;
+    String API_KEY= BuildConfig.API_KEY;
     String weather_description;
     ImageView thermometer;
     String temperature;
@@ -49,10 +48,12 @@ public class MainActivity extends AppCompatActivity {
     TextView errors;
     String city;
     SQLiteDatabase weatherDatabase;
+
     // Weather Description TextView
     TextView weather;
     TextView aqis;
-// Table Text Views
+
+    // Table Text Views
     TextView dayX;
     TextView day1;
     TextView day2;
@@ -72,16 +73,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void setDailyInvisible(){
-//        morning1.setText("-");
-//        morning2.setText("-");
-//        morning3.setText("-");
-//        morning4.setText("-");
-//        morning5.setText("-");
-//        night1.setText("-");
-//        night2.setText("-");
-//        night3.setText("-");
-//        night4.setText("-");
-//        night5.setText("-");
         current_temp_textView.setText("-");
         aqis.setVisibility(View.INVISIBLE);
         weather.setVisibility(View.INVISIBLE);
@@ -114,36 +105,6 @@ public class MainActivity extends AppCompatActivity {
         night5.setVisibility(View.VISIBLE);
     }
 
-    public void animate(int time){
-        current_temp_textView.setAlpha(0f);
-        aqis.setAlpha(0f);
-        weather.setAlpha(0f);
-        morning1.setAlpha(0f);
-        morning2.setAlpha(0f);
-        morning3.setAlpha(0f);
-        morning4.setAlpha(0f);
-        morning5.setAlpha(0f);
-        night1.setAlpha(0f);
-        night2.setAlpha(0f);
-        night3.setAlpha(0f);
-        night4.setAlpha(0f);
-        night5.setAlpha(0f);
-
-        current_temp_textView.animate().alpha(1f).setDuration(time);
-        weather.animate().alpha(1f).setDuration(time);
-        aqis.animate().alpha(1f).setDuration(time);
-        morning1.animate().alpha(1f).setDuration(time);
-        morning2.animate().alpha(1f).setDuration(time);
-        morning3.animate().alpha(1f).setDuration(time);
-        morning4.animate().alpha(1f).setDuration(time);
-        morning5.animate().alpha(1f).setDuration(time);
-
-        night1.animate().alpha(1f).setDuration(time);
-        night2.animate().alpha(1f).setDuration(time);
-        night3.animate().alpha(1f).setDuration(time);
-        night4.animate().alpha(1f).setDuration(time);
-        night5.animate().alpha(1f).setDuration(time);
-    }
     public void setTextColor(int color){
         editText.setHintTextColor(color);
         editText.setTextColor(color);
@@ -209,6 +170,8 @@ public class MainActivity extends AppCompatActivity {
 
         button.performHapticFeedback(100);
         button.setClickable(false);
+
+        // Set the button unclickable for a certain amount of time- {1.5 seconds}
         Timer buttonTimer = new Timer();
         buttonTimer.schedule(new TimerTask() {
             @Override
@@ -220,14 +183,15 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             }
-        }, 1500);
+        }, ButtonHideTime);
+
         thermometer.animate().rotationBy(360f).setDuration(200);
         gridLayout.setAlpha(0f);
         gridLayoutTemp.setAlpha(0f);
         setDailyInvisible();
         String current_weather;
 
-        current_weather="https://api.openweathermap.org/data/2.5/weather?q="+editText.getText()+"&units=metric&appid="+api_key;
+        current_weather="https://api.openweathermap.org/data/2.5/weather?q="+editText.getText()+"&units=metric&appid="+ API_KEY;
 
         Log.i("Firstget",current_weather);
 
@@ -246,8 +210,9 @@ public class MainActivity extends AppCompatActivity {
                 city=editText.getText().toString();
                 Log.i("Temperature",temperature);
 
-                String weekly_weather="https://api.openweathermap.org/data/2.5/onecall?lat="+ latitude +"&lon="+ longitude +"&exclude=hourly,current,minutely&units=metric&appid="+api_key;
+                String weekly_weather="https://api.openweathermap.org/data/2.5/onecall?lat="+ latitude +"&lon="+ longitude +"&exclude=hourly,current,minutely&units=metric&appid="+ API_KEY;
                 Log.i("Weekly_Weather",weekly_weather);
+
                 getResponse(new VolleyCallback() {
                     @Override
                     public void onSuccess(String result) {
@@ -305,7 +270,7 @@ public class MainActivity extends AppCompatActivity {
                         if (errors.getVisibility() == View.VISIBLE) {
                             errors.setVisibility(View.INVISIBLE);
                         }
-                        String air_quality_index="https://api.openweathermap.org/data/2.5/air_pollution?lat="+latitude+"&lon="+longitude+"&appid="+api_key;
+                        String air_quality_index="https://api.openweathermap.org/data/2.5/air_pollution?lat="+latitude+"&lon="+longitude+"&appid="+ API_KEY;
                         getResponse(new VolleyCallback() {
                             @Override
                             public void onSuccess(String res) {
@@ -358,9 +323,6 @@ public class MainActivity extends AppCompatActivity {
                                  String aqi = new Gson().fromJson(String.valueOf(res), JsonObject.class).getAsJsonObject().get("list").getAsJsonArray().get(0)
                                          .getAsJsonObject().get("main").getAsJsonObject().get("aqi").getAsString();
                                  aqis.setText("AQI: "+aqi);
-                                 String insert_city="INSERT INTO LOCATION VALUES (\""+city+"\");";
-                                 Log.i("Insert city",insert_city);
-                                 weatherDatabase.execSQL(insert_city);
                             }
 
                             @Override
@@ -384,7 +346,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                     @Override
                     public void onError(VolleyError volleyError) {
-
                         new CheckNetwork(getApplication()).execute();
                         errors.setVisibility(View.VISIBLE);
                         setDailyInvisible();
@@ -400,6 +361,7 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 },weekly_weather);
+
             }
             @Override
             public void onError(VolleyError volleyError) {
@@ -425,7 +387,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
         gridLayoutTemp=findViewById(R.id.gridLayoutTemp);
         dayX=findViewById(R.id.day);
         gridLayout=findViewById(R.id.gridLayout);
@@ -436,12 +398,11 @@ public class MainActivity extends AppCompatActivity {
         button=findViewById(R.id.button);
         errors=findViewById(R.id.errors);
         weather=findViewById(R.id.weather_desc);
-        //new CheckNetwork(getApplication()).execute();
-        api_key="a4aca77f1140af8f8d6a1ca59c5a867d";
-        background=findViewById(R.id.background);
         aqis=findViewById(R.id.aqi);
-        background.setBackgroundResource(R.drawable.clear_morning);
+        background=findViewById(R.id.background);
 
+        // Default Background
+        background.setBackgroundResource(R.drawable.clear_morning);
 
         // Day textView
         day1=findViewById(R.id.day1);
@@ -463,24 +424,6 @@ public class MainActivity extends AppCompatActivity {
         night4=findViewById(R.id.night4);
         night5=findViewById(R.id.night5);
 
-        weatherDatabase=openOrCreateDatabase("weather",MODE_PRIVATE,null);
-        weatherDatabase.execSQL("CREATE TABLE IF NOT EXISTS LOCATION(CITY TEXT);");
-
-        cursor=weatherDatabase.rawQuery("SELECT CITY FROM LOCATION",null);
-        if(cursor!=null){
-            Log.i("Hello","World");
-        }
-        try{
-            cursor.moveToLast();
-            dbCity=cursor.getString(0);
-            editText.setText(dbCity);
-            Log.i("DbCity",dbCity);
-        }
-        catch (Exception e){
-            Log.i("DbCity","Nope");
-            dbCity=null;
-        }
         setTextColor(Color.WHITE);
-
     }
 }
