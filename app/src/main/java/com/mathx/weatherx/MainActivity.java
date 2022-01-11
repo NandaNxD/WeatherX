@@ -3,7 +3,7 @@ package com.mathx.weatherx;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.text.style.BulletSpan;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -70,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
     TextView night3;
     TextView night4;
     TextView night5;
-
 
     public void setDailyInvisible(){
         current_temp_textView.setText("-");
